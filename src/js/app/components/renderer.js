@@ -13,7 +13,7 @@ export default class Renderer {
     this.threeRenderer = new THREE.WebGLRenderer({antialias: true});
 
     // Set clear color to fog to enable fog or to hex color for no fog
-    this.threeRenderer.setClearColor(scene.fog.color);
+    this.threeRenderer.setClearColor(0x000000, 1);
     this.threeRenderer.setPixelRatio(window.devicePixelRatio); // For retina
 
     // Appends canvas
@@ -35,7 +35,8 @@ export default class Renderer {
   }
 
   updateSize() {
-    this.threeRenderer.setSize(this.container.offsetWidth, this.container.offsetHeight);
+    const height = window.innerHeight - 40;
+    this.threeRenderer.setSize(window.innerWidth , height);
   }
 
   render(scene, camera) {

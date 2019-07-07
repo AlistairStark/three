@@ -7,27 +7,26 @@ import TWEEN from 'tween.js';
 import Renderer from './components/renderer';
 import Camera from './components/camera';
 import Light from './components/light';
-import Controls from './components/controls';
 
 // Helpers
-import Geometry from './helpers/geometry';
 import Stats from './helpers/stats';
-
-// Model
-import Texture from './model/texture';
-import Model from './model/model';
-
-// Managers
-import Interaction from './managers/interaction';
-import DatGUI from './managers/datGUI';
 
 // data
 import Config from './../data/config';
+import imageData from './../data/imageConfig';
+
+// image mesh
+import Image from './model/image';
+
+import Events from './managers/events';
 // -- End of imports
 
 // This class instantiates and ties all of the components together, starts the loading process and renders the main loop
 export default class Main {
   constructor(container) {
+    this.loadManager = new THREE.LoadingManager(() => {
+      console.log('I HAVE LOADED');
+    });
     // Set container property to container element
     this.container = container;
 
@@ -36,7 +35,7 @@ export default class Main {
 
     // Main scene creation
     this.scene = new THREE.Scene();
-    this.scene.fog = new THREE.FogExp2(Config.fog.color, Config.fog.near);
+    // this.scene.fog = new THREE.FogExp2(Config.fog.color, Config.fog.near);
 
     // Get Device Pixel Ratio first for retina
     if(window.devicePixelRatio) {
@@ -48,17 +47,12 @@ export default class Main {
 
     // Components instantiations
     this.camera = new Camera(this.renderer.threeRenderer);
-    this.controls = new Controls(this.camera.threeCamera, container);
+    // this.controls = new Controls(this.camera.threeCamera, container);
     this.light = new Light(this.scene);
 
     // Create and place lights in scene
-    const lights = ['ambient', 'directional', 'point', 'hemi'];
+    const lights = ['ambient', ,'point', 'hemi'];
     lights.forEach((light) => this.light.place(light));
-
-    // Create and place geo in scene
-    this.geometry = new Geometry(this.scene);
-    this.geometry.make('plane')(150, 150, 10, 10);
-    this.geometry.place([0, -20, 0], [Math.PI / 2, 0, 0]);
 
     // Set up rStats if dev environment
     if(Config.isDev && Config.isShowingStats) {
@@ -66,43 +60,36 @@ export default class Main {
       this.stats.setUp();
     }
 
-    // Instantiate texture class
-    this.texture = new Texture();
+    // set up image
+    this.image = new Image();
+    const imageMeshes = this.getImageMeshes(imageData);
+    imageMeshes.forEach(mesh => this.scene.add(mesh));
 
-    // Start loading the textures and then go on to load the model after the texture Promises have resolved
-    this.texture.load().then(() => {
-      this.manager = new THREE.LoadingManager();
+    this.cube = this.createCube();
+    this.cube.position.set(10, 10, -10);
+    this.scene.add(this.cube);
 
-      // Textures loaded, load model
-      this.model = new Model(this.scene, this.manager, this.texture.textures);
-      this.model.load();
-
-      // onProgress callback
-      this.manager.onProgress = (item, loaded, total) => {
-        console.log(`${item}: ${loaded} ${total}`);
-      };
-
-      // All loaders done now
-      this.manager.onLoad = () => {
-        // Set up interaction manager with the app now that the model is finished loading
-        new Interaction(this.renderer.threeRenderer, this.scene, this.camera.threeCamera, this.controls.threeControls);
-
-        // Add dat.GUI controls if dev
-        if(Config.isDev) {
-          new DatGUI(this, this.model.obj);
-        }
-
-        // Everything is now fully loaded
-        Config.isLoaded = true;
-        this.container.querySelector('#loading').style.display = 'none';
-      };
-    });
+    // Events
+    this.events = new Events(this.camera.threeCamera, this.cube, this.scene);
+    window.addEventListener('mousemove', this.events.handleMove, false);
+    window.addEventListener('mousedown', this.events.mousePicker);
 
     // Start render which does not wait for model fully loaded
     this.render();
   }
 
+  createCube() {
+    const geometry = new THREE.BoxGeometry(5, 5, 5);
+    const material = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
+    return new THREE.Mesh(geometry, material);
+  }
+
+  getImageMeshes(images) {
+    return images.map(image => this.image.createMesh(image.src, image.dimensions, image.position));
+  }
+
   render() {
+    // this.events.raycast();
     // Render rStats if Dev
     if(Config.isDev && Config.isShowingStats) {
       Stats.start();
@@ -117,13 +104,15 @@ export default class Main {
     }
 
     // Delta time is sometimes needed for certain updates
-    //const delta = this.clock.getDelta();
+    const delta = this.clock.getDelta();
 
     // Call any vendor or module frame updates here
     TWEEN.update();
-    this.controls.threeControls.update();
+    // this.controls.threeControls.update();
 
     // RAF
     requestAnimationFrame(this.render.bind(this)); // Bind the main class instead of window object
+
+    window.addEventListener('mousemove', this.events.handleMove, false);
   }
 }

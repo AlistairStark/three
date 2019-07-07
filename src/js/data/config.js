@@ -14,7 +14,7 @@ export default {
   easing: TWEEN.Easing.Quadratic.InOut,
   duration: 500,
   model: {
-    path: './assets/models/Teapot.json',
+    path: '',
     scale: 20
   },
   texture: {
@@ -42,7 +42,7 @@ export default {
     far: 1000,
     aspect: 1,
     posX: 0,
-    posY: 30,
+    posY: 0,
     posZ: 40
   },
   controls: {
@@ -103,7 +103,7 @@ export default {
     enabled: true,
     color: 0xc8c8c8,
     groundColor: 0xffffff,
-    intensity: 0.55,
+    intensity: 1,
     x: 0,
     y: 0,
     z: 0

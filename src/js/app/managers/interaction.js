@@ -5,6 +5,7 @@ import Config from '../../data/config';
 // Manages all input interactions
 export default class Interaction {
   constructor(renderer, scene, camera, controls) {
+    console.log('DO I LIVE?')
     // Properties
     this.renderer = renderer;
     this.scene = scene;
@@ -37,7 +38,7 @@ export default class Interaction {
 
   onMouseOver(event) {
     event.preventDefault();
-
+    console.log('HELLO< THIS')
     Config.isMouseOver = true;
   }
 

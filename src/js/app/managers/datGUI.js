@@ -6,7 +6,7 @@ export default class DatGUI {
     const gui = new dat.GUI();
 
     this.camera = main.camera.threeCamera;
-    this.controls = main.controls.threeControls;
+    // this.controls = main.controls.threeControls;
     this.light = main.light;
 
     /* Global */
