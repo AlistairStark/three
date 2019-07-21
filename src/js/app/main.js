@@ -17,6 +17,8 @@ import imageData from "./../data/imageConfig";
 
 // image mesh
 import Image from "./model/image";
+import Particles from './model/particles';
+import Particle from './model/particle';
 
 import Events from "./managers/events";
 // -- End of imports
@@ -61,18 +63,47 @@ export default class Main {
         }
 
         // set up image
-        this.image = new Image();
-        const imageMeshes = this.getImageMeshes(imageData);
-        imageMeshes.forEach(mesh => this.scene.add(mesh));
+        // this.image = new Image();
+        // const imageMeshes = this.getImageMeshes(imageData);
+        // imageMeshes.forEach(mesh => this.scene.add(mesh));
 
+        // generate test cube
         this.cube = this.createCube();
         this.cube.position.set(10, 10, -10);
         this.scene.add(this.cube);
 
+        // generate particles
+        // this.particles = [];
+        this.particles = new Particles();
+        this.scene.add(this.particles.getMesh());
+
+        // this.particles.push(particles);
+
         // Events
-        this.events = new Events(this.camera.threeCamera, this.cube, this.scene);
+        this.events = new Events(this.camera.threeCamera, this.scene.children, this.scene);
         window.addEventListener("mousemove", this.events.handleMove, false);
-        window.addEventListener("mousedown", this.events.mousePicker);
+        window.addEventListener("mousedown", e => {
+            console.log(this.events.mousePicker(e));
+            this.particles.toggleUpdate();
+        });
+        // const loader = new THREE.TextureLoader();
+
+        // this.particles = [];
+
+        // loader.load('https://s3.amazonaws.com/duhaime/blog/tsne-webgl/assets/cat.jpg', texture => {
+        //     const renderWidth = 1200;
+        //     const width = texture.image.width;
+        //     const height = texture.image.height;
+        //     const xLoopCount = 1200;
+        //     const yLoopCount = 500;
+        //     for (let i = 0; i < xLoopCount; i++) {
+        //         for (let j = 0; j < yLoopCount; j++) {
+        //           this.particles.push(new Particle(i * 1200, j * 500, 1, texture, this.scene));
+        //         }
+        //       }
+        //     console.log('IMAGE IS LOADED', height);
+        // });
+
 
         // Start render which does not wait for model fully loaded
         this.render();
@@ -89,7 +120,6 @@ export default class Main {
     }
 
     render() {
-        // this.events.raycast();
         // Render rStats if Dev
         if (Config.isDev && Config.isShowingStats) {
             Stats.start();
@@ -114,5 +144,7 @@ export default class Main {
         requestAnimationFrame(this.render.bind(this)); // Bind the main class instead of window object
 
         window.addEventListener("mousemove", this.events.handleMove, false);
+
+        this.particles.updateParticles();
     }
 }

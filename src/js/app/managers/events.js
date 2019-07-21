@@ -2,14 +2,14 @@ import * as THREE from 'three';
 import $ from 'jquery';
 
 export default class Event {
-    constructor(camera, meshes, scene) {
+    constructor(camera, objects, scene) {
         this.raycaster = new THREE.Raycaster();
         this.mouse = new THREE.Vector3();
 
         this.canDetect = true;
 
         this.scene = scene;
-        this.meshes = meshes;
+        this.meshes = objects.filter(object => object.type === 'Points' || object.type === 'Mesh');
         this.camera = camera;
 
         this.handleMove = this.handleMove.bind(this);
@@ -49,15 +49,17 @@ export default class Event {
         this.mouse.y = y;
         this.mouse.z = z;
 
-        this.raycast();
+        return this.raycast();
     }
 
     raycast() {
         this.raycaster.setFromCamera(this.mouse, this.camera);
-        const intersects = this.raycaster.intersectObjects([this.meshes]);
+        const intersects = this.raycaster.intersectObjects(this.meshes);
         // Change color if hit block
         if ( intersects.length > 0 ) {
             intersects[0].object.material.color.setHex( Math.random() * 0xffffff );
         }
+
+        return intersects;
     }
 }
